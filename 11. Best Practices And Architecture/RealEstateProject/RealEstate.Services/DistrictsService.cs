@@ -1,4 +1,5 @@
-﻿using RealEstate.Services.Models;
+﻿using AutoMapper.QueryableExtensions;
+using RealEstate.Services.Models;
 using RealEstates.Data;
 using System;
 using System.Collections.Generic;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace RealEstate.Services
 {
-    public class DistrictsService : IDistrictsService
+    public class DistrictsService : BaseService, IDistrictsService
     {
         private ApplicationDbContext dbContext;
 
@@ -23,6 +24,8 @@ namespace RealEstate.Services
         public IEnumerable<DistrictInfoDto> GetMostExpensiveDistricts(int count)
         {
             var districts = dbContext.Districts
+                .ProjectTo<DistrictInfoDto>(this.Mapper.ConfigurationProvider)
+                /*
                 .Select(d => new DistrictInfoDto()
                 {
                     Name = d.Name,
@@ -30,6 +33,7 @@ namespace RealEstate.Services
                     AveragePricePerSquareMeter = d.Properties.Where(p => p.Price.HasValue)
                                                  .Average(p => p.Price / (decimal)p.Size) ?? 0
                 })
+                */
                 .OrderByDescending(p => p.AveragePricePerSquareMeter)
                 .Take(count)
                 .ToList();

@@ -1,4 +1,5 @@
-﻿using RealEstate.Services.Models;
+﻿using AutoMapper.QueryableExtensions;
+using RealEstate.Services.Models;
 using RealEstates.Data;
 using RealEstates.Models;
 using System;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace RealEstate.Services
 {
-    public class PropertiesService : IPropertiesService
+    public class PropertiesService : BaseService, IPropertiesService
     {
         private ApplicationDbContext dbContext;
 
@@ -74,6 +75,13 @@ namespace RealEstate.Services
             dbContext.SaveChanges();
         }
 
+        public decimal AveragePricePerSquareMeter(int districtId)
+        {
+            return dbContext.Properties
+                .Where(p => p.Price.HasValue && p.District.Id == districtId)
+                .Average(p => p.Price / (decimal)p.Size ?? 0);
+        }
+
         public decimal AveragePricePerSquareMeter()
         {
             return dbContext.Properties
@@ -81,10 +89,19 @@ namespace RealEstate.Services
                 .Average(p => p.Price / (decimal)p.Size ?? 0); 
         }
 
+        public double AverageSize(int districtId)
+        {
+            return dbContext.Properties
+                .Where(p => p.District.Id == districtId)
+                .Average(p => p.Size);
+        }
+
         public IEnumerable<PropertyInfoDto> Search(int minPrice, int maxPrice, int minSize, int maxSize)
         {
             var properties = dbContext.Properties
                 .Where(p => p.Price >= minPrice && p.Price <= maxPrice && p.Size >= minPrice && p.Size <= maxSize)
+                .ProjectTo<PropertyInfoDto>(this.Mapper.ConfigurationProvider)
+                /*
                 .Select(p => new PropertyInfoDto()
                 {
                     Size = p.Size,
@@ -93,6 +110,21 @@ namespace RealEstate.Services
                     DistrictName = p.District.Name,
                     PropertyType = p.Type.Name
                 })
+                */
+                .ToList();
+
+            return properties;
+        }
+
+        public IEnumerable<PropertyInfoFullDataDTO> GetFullData(int count)
+        {
+            var properties = dbContext.Properties
+                .Where(p => p.Floor.HasValue)
+                .ProjectTo<PropertyInfoFullDataDTO>(this.Mapper.ConfigurationProvider)
+                .OrderByDescending(p => p.Price)
+                .ThenBy(p => p.Size)
+                .ThenBy(p => p.Year)
+                .Take(count)
                 .ToList();
 
             return properties;

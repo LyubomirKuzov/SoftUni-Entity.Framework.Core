@@ -8,6 +8,7 @@ namespace RealEstates.ConsoleApplication
     {
         static void Main(string[] args)
         {
+            Console.InputEncoding = Encoding.Unicode;
             Console.OutputEncoding = Encoding.Unicode;
 
             var db = new ApplicationDbContext();
@@ -19,6 +20,9 @@ namespace RealEstates.ConsoleApplication
                 Console.WriteLine("1: Property search");
                 Console.WriteLine("2: Most expensive districts");
                 Console.WriteLine("3: Average price per square meter");
+                Console.WriteLine("4: Add tag");
+                Console.WriteLine("5: Bulk tag to properties");
+                Console.WriteLine("6: Get properties full info");
                 Console.WriteLine("0: EXIT");
 
                 bool parsed = int.TryParse(Console.ReadLine(), out int option);
@@ -28,7 +32,7 @@ namespace RealEstates.ConsoleApplication
                     break;
                 }
 
-                if (parsed && (option >= 1 && option <= 2))
+                if (parsed && (option >= 1 && option <= 6))
                 {
                     switch (option)
                     {
@@ -44,6 +48,18 @@ namespace RealEstates.ConsoleApplication
                             AveragePricePerSquareMeter(db);
                             break;
 
+                        case 4:
+                            AddTag(db);
+                            break;
+
+                        case 5:
+                            BulkTagToProperties(db);
+                            break;
+
+                        case 6:
+                            GetPropertyFullInfo(db);
+                            break;
+
                         default:
                             break;
                     }
@@ -52,6 +68,70 @@ namespace RealEstates.ConsoleApplication
                     Console.ReadKey();
                 }
             }
+        }
+
+        private static void GetPropertyFullInfo(ApplicationDbContext db)
+        {
+            Console.WriteLine("Properties count:");
+
+            int count = int.Parse(Console.ReadLine());
+
+            IPropertiesService propertiesService = new PropertiesService(db);
+            var result = propertiesService.GetFullData(count).ToArray();
+
+            var xmlSerializer = new XmlSerializer(typeof(PropertyInfoFullDataDTO[]));
+
+            var writer = new StringWriter();
+
+            var result = xmlSerializer.Serialize(writer, result);
+
+            Console.WriteLine(result.ToString().TrimEnd());
+
+            foreach (var item in result)
+            {
+                Console.WriteLine(item.DistrictName);
+                Console.WriteLine(item.BuildingType);
+                Console.WriteLine(item.Id);
+                Console.WriteLine(item.Price);
+                Console.WriteLine(item.PropertyType);
+                Console.WriteLine(item.Size);
+                Console.WriteLine(item.Year);
+                Console.WriteLine(item.Tags);
+
+                foreach (var tag in item.Tags)
+                {
+                    Console.WriteLine(tag.Name);
+                }
+            }
+        }
+
+        private static void BulkTagToProperties(ApplicationDbContext db)
+        {
+            Console.WriteLine("Bulk operation started!");
+
+            IPropertiesService propertiesService = new PropertiesService(db);
+            ITagService tagService = new TagService(db, propertiesService);
+
+            tagService.BulkTagToProperties();
+
+            Console.WriteLine("Bulk operation finished!");
+        }
+
+        private static void AddTag(ApplicationDbContext db)
+        {
+            Console.WriteLine("Tag name:");
+            string tagName = Console.ReadLine();
+
+            Console.WriteLine("Importance (optional):");
+
+            bool isParsed = int.TryParse(Console.ReadLine(), out int tagImportance);
+
+            IPropertiesService propertiesService = new PropertiesService(db);
+            ITagService tagService = new TagService(db, propertiesService);
+
+            int? importance = isParsed ? tagImportance : null;
+
+            tagService.Add(tagName, importance);
         }
 
         private static void PropertySearch(ApplicationDbContext db)
