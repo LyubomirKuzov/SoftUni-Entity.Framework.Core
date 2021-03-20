@@ -42,6 +42,14 @@ namespace PetStore.Core
                     AddProduct(db);
                     break;
 
+                case 3:
+                    BuyPet(db);
+                    break;
+
+                case 4:
+                    BuyProduct(db);
+                    break;
+
                 case 5:
                 default:
                     Console.WriteLine("Leaving the shop...");
@@ -113,13 +121,77 @@ namespace PetStore.Core
 
             if (buyer == null)
             {
+                buyer = new Buyer()
+                {
+                    FirstName = buyerName
+                };
 
+                db.Buyers.Add(buyer);
+
+                db.SaveChanges();
             }
+
+            Console.WriteLine("Select valid pet name and type that you wish to buy:");
+            Console.WriteLine("Pet name");
+            string petName = Console.ReadLine();
+            Console.WriteLine("Pet type");
+            string petType = Console.ReadLine();
+
+            var pet = db.Pets.FirstOrDefault(p => p.Name == petName && p.PetType.Name == petType && p.IsSold == false);
+
+            if (pet == null)
+            {
+                Console.WriteLine("Invalid pet or pet is already bought!");
+            }
+
+            else
+            {
+                buyer.Pets.Add(pet);
+
+                Console.WriteLine($"{buyerName} bought {petName} --> {petType}");
+            }
+
+            db.SaveChanges();
         }
 
         public static void BuyProduct(PetStoreDbContext db)
         {
+            Console.WriteLine("Your name is:");
+            string buyerName = Console.ReadLine();
 
+            var buyer = db.Buyers.FirstOrDefault(x => x.FirstName == buyerName);
+
+            if (buyer == null)
+            {
+                buyer = new Buyer()
+                {
+                    FirstName = buyerName
+                };
+
+                db.Buyers.Add(buyer);
+
+                db.SaveChanges();
+            }
+
+            Console.WriteLine("Select valid product that you wish to buy:");
+            Console.WriteLine("Product name");
+            string productName = Console.ReadLine();
+
+            var product = db.Products.FirstOrDefault(p => p.Name == productName);
+
+            if (product == null)
+            {
+                Console.WriteLine("Invalid product!");
+            }
+
+            else
+            {
+                buyer.Products.Add(product);
+
+                Console.WriteLine($"{buyerName} bought {productName}");
+            }
+
+            db.SaveChanges();
         }
     }
 }

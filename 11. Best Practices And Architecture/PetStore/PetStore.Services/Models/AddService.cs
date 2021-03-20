@@ -45,7 +45,5 @@ namespace PetStore.Services.Models
 
             return product;
         }
-
-
     }
 }
