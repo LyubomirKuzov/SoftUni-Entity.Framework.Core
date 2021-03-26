@@ -9,8 +9,12 @@ namespace QuizSystem.Services
 {
     public interface IQuizService
     {
-        void Add(string title);
+        int Add(string title);
 
         public QuizViewModel GetQuizById(int quizId);
+
+        public IEnumerable<UserQuizViewModel> GetQuizesByUserName(string username);
+
+        void StartQuiz(string username, int quizId);
     }
 }

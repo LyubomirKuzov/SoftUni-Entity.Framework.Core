@@ -1,4 +1,5 @@
-﻿@{
+﻿@model IEnumerable<QuizSystem.Services.Models.UserQuizViewModel>
+@{
     ViewData["Title"] = "Home Page";
 }
 
@@ -6,3 +7,57 @@
     <h1 class="display-4">Welcome</h1>
     <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
 </div>
+
+<table class="table table-sm table-striped table-bordered table-hover">
+    <tr>
+        <th>
+            Quiz name
+        </th>
+        <th>
+            Action
+        </th>
+    </tr>
+    @foreach (var quiz in Model)
+    {
+        <tr>
+            <td>
+                @quiz.Title
+            </td>
+            <td>
+                @if (quiz.QuizStatus == QuizSystem.Services.Models.Enumerations.QuizStatus.NotStarted)
+                {
+                    <a href="/Quiz/Test/@quiz.QuizId" class="btn btn-success">Start test</a>
+                }
+
+                else if (quiz.QuizStatus == QuizSystem.Services.Models.Enumerations.QuizStatus.InProgress)
+                {
+                    <a asp-controller="Quiz" asp-action="Test" class="btn btn-warning">Continue test</a>
+                }
+
+                else if (quiz.QuizStatus == QuizSystem.Services.Models.Enumerations.QuizStatus.Finished)
+                {
+                    <a href="/Quiz/Results/@quiz.QuizId" class="btn btn-secondary">View results</a>
+                }
+            </td>
+        </tr>
+    }
+</table>
+
+@*<table class="table table-sm table-hover table-bordered">
+        <tr>
+            <th>Date</th>
+            <th>Day of week</th>
+        </tr>
+
+        @for (var dt = DateTime.UtcNow; dt <= DateTime.UtcNow.AddDays(10); dt = dt.AddDays(1))
+        {
+            <tr>
+                <td>
+                    @dt.ToShortDateString()
+                </td>
+                <td>
+                    @dt.DayOfWeek
+                </td>
+            </tr>
+        }
+    </table>*@

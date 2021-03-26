@@ -2,9 +2,13 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
+using QuizSystem.ConsoleUI.Models;
 using QuizSystem.Data;
 using QuizSystem.Services;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 
 namespace QuizSystem.ConsoleUI
@@ -18,6 +22,14 @@ namespace QuizSystem.ConsoleUI
             ConfigureServices(serviceCollection);
 
             var serviceProvider = serviceCollection.BuildServiceProvider();
+
+            var jsonService = serviceProvider.GetService<IJsonImportService>();
+            jsonService.Import("EF-Core-Quiz.json", "EF Core Test v2");
+
+            /*
+            var dbContext = serviceProvider.GetService<ApplicationDbContext>();
+            dbContext.Database.Migrate()
+            */
 
             /*
             var quizService = serviceProvider.GetService<IQuizService>();
@@ -83,6 +95,7 @@ namespace QuizSystem.ConsoleUI
             services.AddTransient<IQuestionService, QuestionService>();
             services.AddTransient<IAnswerService, AnswerService>();
             services.AddTransient<IUserAnswerService, UserAnswerService>();
+            services.AddTransient<IJsonImportService, JsonImportService>();
         }
     }
 }
